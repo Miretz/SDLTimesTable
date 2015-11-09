@@ -8,11 +8,11 @@ enum { Width = 1920, Height = 1080 };
 
 struct Color {
 	
-	int r = 255;
-	int g = 255;
-	int b = 255;
+	int r = 0;
+	int g = 0;
+	int b = 0;
 
-	void update(){
+	void update(int min, int max){
 		
 		static std::mt19937 rand(time(nullptr));
 		std::uniform_int_distribution<int> dist(-1, 1);
@@ -21,9 +21,9 @@ struct Color {
 		int newG = g + dist(rand);
 		int newB = b + dist(rand);
 		
-		r = std::min(std::max(0, newR), 255);
-		g = std::min(std::max(0, newG), 255);
-		b = std::min(std::max(0, newB), 255);
+		r = std::min(std::max(min, newR), max);
+		g = std::min(std::max(min, newG), max);
+		b = std::min(std::max(min, newB), max);
 
 	}
 };
@@ -40,16 +40,16 @@ int main(int argc, char* argv[]) {
 	SDL_CreateWindowAndRenderer(Width, Height, SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_FULLSCREEN, &window, &renderer);
 	
 	Color color;
+	Color bgColor;
 	bool running = true;
 	auto k = 1.0f;
 
 	while (running){
 		
-		k += 0.01f;
+		color.update(128,255);
+		bgColor.update(0,128);
 
-		color.update();
-
-		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+		SDL_SetRenderDrawColor(renderer, bgColor.r, bgColor.g, bgColor.b, 0x00);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 0xff);
 		
@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
 			auto y1 = sin(2 * M_PI * i / 200);
 			auto x2 = cos(2 * M_PI * (i * k) / 200);
 			auto y2 = sin(2 * M_PI * (i * k) / 200);
+
 			SDL_RenderDrawLine(renderer,
 				(x1 + 1.0f) * Height / 2 + (Width - Height) / 2, (y1 + 1.0f) * Height / 2,
 				(x2 + 1.0f) * Height / 2 + (Width - Height) / 2, (y2 + 1.0f) * Height / 2);
@@ -73,6 +74,9 @@ int main(int argc, char* argv[]) {
 		}
 
 		SDL_Delay(1000 / 60);
+
+		k += 0.01f;
+
 	}
 
 	SDL_DestroyRenderer(renderer);
